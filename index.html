@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="通过逐步动画观察 BFS、Dijkstra 与 A* 的寻路过程。">
+  <title>Pathfinding Lab · 寻路算法实验室</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="回到页面顶部">
+      <span class="brand-mark" aria-hidden="true">PL</span>
+      <span>Pathfinding Lab</span>
+    </a>
+    <span class="header-note">看见算法如何思考</span>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="page-title">
+      <p class="eyebrow">INTERACTIVE ALGORITHM DEMO</p>
+      <h1 id="page-title">别只看结果，<br><em>看见搜索发生。</em></h1>
+      <p class="hero-copy">在同一张地图上逐步运行 BFS、Dijkstra 和 A*。观察候选节点如何出现、搜索范围如何扩张，以及不同策略怎样找到终点。</p>
+    </section>
+
+    <section class="lab" aria-label="寻路算法演示区">
+      <div class="lab-toolbar">
+        <div class="algorithm-tabs" role="tablist" aria-label="选择算法">
+          <button class="algorithm-tab is-active" role="tab" aria-selected="true" data-algorithm="bfs">BFS</button>
+          <button class="algorithm-tab" role="tab" aria-selected="false" data-algorithm="dijkstra">Dijkstra</button>
+          <button class="algorithm-tab" role="tab" aria-selected="false" data-algorithm="astar">A*</button>
+        </div>
+        <div class="run-controls">
+          <button id="resetButton" class="button button-secondary" type="button">重置过程</button>
+          <button id="stepButton" class="button button-secondary" type="button">单步</button>
+          <button id="runButton" class="button button-primary" type="button">开始搜索</button>
+        </div>
+      </div>
+
+      <div class="lab-body">
+        <div class="board-column">
+          <div class="board-meta">
+            <div id="statusText" class="status-text" aria-live="polite">准备就绪 · 选择工具编辑地图</div>
+            <label class="speed-control" for="speedRange">
+              <span>速度</span>
+              <input id="speedRange" type="range" min="1" max="5" value="3">
+            </label>
+          </div>
+
+          <div class="board-frame">
+            <div id="grid" class="path-grid" role="grid" aria-label="可编辑寻路地图"></div>
+          </div>
+
+          <div class="legend" aria-label="地图图例">
+            <span><i class="legend-swatch start"></i>起点</span>
+            <span><i class="legend-swatch end"></i>终点</span>
+            <span><i class="legend-swatch frontier"></i>待考察</span>
+            <span><i class="legend-swatch visited"></i>已访问</span>
+            <span><i class="legend-swatch current"></i>当前</span>
+            <span><i class="legend-swatch path"></i>最终路径</span>
+          </div>
+        </div>
+
+        <aside class="control-panel" aria-label="地图编辑与运行状态">
+          <div class="panel-section">
+            <p class="panel-kicker">MAP EDITOR</p>
+            <h2>编辑地图</h2>
+            <p class="panel-help">选择工具后点击或拖动格子。权重只影响 Dijkstra 与 A*。</p>
+            <div class="tool-grid" aria-label="地图工具">
+              <button class="tool-button is-active" type="button" data-tool="wall" aria-pressed="true"><span class="tool-icon wall-icon"></span>障碍</button>
+              <button class="tool-button" type="button" data-tool="weight" aria-pressed="false"><span class="tool-icon weight-icon">5</span>权重</button>
+              <button class="tool-button" type="button" data-tool="start" aria-pressed="false"><span class="tool-icon start-icon">S</span>起点</button>
+              <button class="tool-button" type="button" data-tool="end" aria-pressed="false"><span class="tool-icon end-icon">E</span>终点</button>
+              <button class="tool-button" type="button" data-tool="erase" aria-pressed="false"><span class="tool-icon erase-icon">×</span>擦除</button>
+            </div>
+            <div class="map-actions">
+              <button id="randomButton" class="text-button" type="button">随机地图</button>
+              <button id="clearButton" class="text-button" type="button">清空地图</button>
+            </div>
+          </div>
+
+          <div class="panel-section live-section">
+            <p class="panel-kicker">LIVE STATE</p>
+            <h2>运行状态</h2>
+            <dl class="metrics">
+              <div><dt>当前节点</dt><dd id="currentMetric">—</dd></div>
+              <div><dt>待考察</dt><dd id="frontierMetric">0</dd></div>
+              <div><dt>已访问</dt><dd id="visitedMetric">0</dd></div>
+              <div><dt>路径代价</dt><dd id="costMetric">—</dd></div>
+            </dl>
+            <div class="score-line">
+              <span id="scoreLabel">层级 distance</span>
+              <strong id="scoreValue">—</strong>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="algorithm-guide" aria-labelledby="guide-title">
+      <div class="guide-intro">
+        <p class="eyebrow">THREE WAYS TO SEARCH</p>
+        <h2 id="guide-title">它们的区别，不只是“快和慢”</h2>
+        <p>三种算法都维护“待考察”和“已访问”两类节点。真正的差别，是下一次从待考察节点中取出谁。</p>
+      </div>
+      <div class="algorithm-cards">
+        <article class="algorithm-card" data-guide="bfs">
+          <span class="card-index">01</span><h3>BFS</h3>
+          <p>像水波一样逐层扩张。只要每一步代价相同，它一定能找到步数最少的路径。</p>
+          <code>priority = depth</code>
+          <ul><li>数据结构：队列</li><li>忽略地形权重</li><li>适合无权图</li></ul>
+        </article>
+        <article class="algorithm-card" data-guide="dijkstra">
+          <span class="card-index">02</span><h3>Dijkstra</h3>
+          <p>每次选择累计花费最低的节点，稳妥地向外扩张，保证得到最低总代价。</p>
+          <code>priority = g(n)</code>
+          <ul><li>数据结构：优先队列</li><li>支持非负权重</li><li>保证最小代价</li></ul>
+        </article>
+        <article class="algorithm-card" data-guide="astar">
+          <span class="card-index">03</span><h3>A*</h3>
+          <p>在已付出的代价之外，再估计离终点还有多远，让搜索更有方向感。</p>
+          <code>priority = g(n) + h(n)</code>
+          <ul><li>数据结构：优先队列</li><li>使用启发函数</li><li>通常访问更少节点</li></ul>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Pathfinding Lab</span>
+    <span>BFS · Dijkstra · A*</span>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
