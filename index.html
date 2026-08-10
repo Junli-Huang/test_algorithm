@@ -43,7 +43,12 @@
             <div id="statusText" class="status-text" aria-live="polite">准备就绪 · 选择工具编辑地图</div>
             <label class="speed-control" for="speedRange">
               <span>速度</span>
-              <input id="speedRange" type="range" min="1" max="5" value="3">
+              <select id="speedRange">
+                <option value="slow">慢速 · 420ms</option>
+                <option value="normal" selected>正常 · 120ms</option>
+                <option value="fast">快速 · 55ms</option>
+                <option value="turbo">极速 · 20ms</option>
+              </select>
             </label>
           </div>
 
@@ -66,6 +71,15 @@
             <p class="panel-kicker">MAP EDITOR</p>
             <h2>编辑地图</h2>
             <p class="panel-help">选择工具后点击或拖动格子。权重只影响 Dijkstra 与 A*。</p>
+            <div class="preset-group">
+              <span class="field-label">地图预设</span>
+              <div class="preset-grid" aria-label="选择地图预设">
+                <button class="preset-button" type="button" data-preset="blank">白板</button>
+                <button class="preset-button" type="button" data-preset="weights">权重</button>
+                <button class="preset-button" type="button" data-preset="walls">障碍</button>
+                <button class="preset-button is-active" type="button" data-preset="mixed">权重 + 障碍</button>
+              </div>
+            </div>
             <div class="tool-grid" aria-label="地图工具">
               <button class="tool-button is-active" type="button" data-tool="wall" aria-pressed="true"><span class="tool-icon wall-icon"></span>障碍</button>
               <button class="tool-button" type="button" data-tool="weight" aria-pressed="false"><span class="tool-icon weight-icon">5</span>权重</button>
@@ -75,7 +89,7 @@
             </div>
             <div class="map-actions">
               <button id="randomButton" class="text-button" type="button">随机地图</button>
-              <button id="clearButton" class="text-button" type="button">清空地图</button>
+              <button id="clearButton" class="text-button" type="button">恢复白板</button>
             </div>
           </div>
 

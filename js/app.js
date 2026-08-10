@@ -4,12 +4,44 @@ const ROWS = 13;
 const COLS = 19;
 const DEFAULT_START = { row: 6, col: 2 };
 const DEFAULT_END = { row: 6, col: 16 };
-const SPEED_DELAYS = { 1: 420, 2: 250, 3: 120, 4: 55, 5: 20 };
+const SPEED_DELAYS = { slow: 420, normal: 120, fast: 55, turbo: 20 };
+
+const PRESETS = {
+  blank: { name: "白板", walls: [], weights: [] },
+  weights: {
+    name: "权重",
+    walls: [],
+    weights: [
+      [6, 5], [6, 6], [6, 7], [6, 8], [6, 9], [6, 10], [6, 11], [6, 12], [6, 13],
+      [5, 9], [7, 9],
+    ],
+  },
+  walls: {
+    name: "障碍",
+    walls: [
+      [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6], [9, 6],
+      [3, 12], [4, 12], [5, 12], [6, 12], [7, 12], [8, 12], [9, 12], [10, 12],
+    ],
+    weights: [],
+  },
+  mixed: {
+    name: "权重 + 障碍",
+    walls: [
+      [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6], [9, 6],
+      [3, 12], [4, 12], [5, 12], [6, 12], [7, 12], [8, 12], [9, 12], [10, 12],
+    ],
+    weights: [
+      [6, 7], [6, 8], [6, 9], [6, 10], [6, 11],
+      [5, 9], [7, 9], [8, 9], [9, 9],
+    ],
+  },
+};
 
 const elements = {
   grid: document.querySelector("#grid"),
   tabs: [...document.querySelectorAll(".algorithm-tab")],
   tools: [...document.querySelectorAll(".tool-button")],
+  presets: [...document.querySelectorAll(".preset-button")],
   run: document.querySelector("#runButton"),
   step: document.querySelector("#stepButton"),
   reset: document.querySelector("#resetButton"),
@@ -48,6 +80,20 @@ function endCell() { return grid.flat().find(cell => cell.type === "end"); }
 function setDefaultEndpoints() {
   Object.assign(cellAt(DEFAULT_START), { type: "start", weight: 1 });
   Object.assign(cellAt(DEFAULT_END), { type: "end", weight: 1 });
+}
+
+function applyPreset(presetKey) {
+  const preset = PRESETS[presetKey];
+  grid = createGrid();
+  for (const [row, col] of preset.walls) Object.assign(grid[row][col], { type: "wall", weight: Infinity });
+  for (const [row, col] of preset.weights) Object.assign(grid[row][col], { type: "weight", weight: 5 });
+  setDefaultEndpoints();
+  elements.presets.forEach(button => button.classList.toggle("is-active", button.dataset.preset === presetKey));
+  clearVisualization(`已载入「${preset.name}」预设 · 仍可继续自定义`);
+}
+
+function markMapAsCustom() {
+  elements.presets.forEach(button => button.classList.remove("is-active"));
 }
 
 function renderGrid() {
@@ -187,6 +233,7 @@ function paintCell(cell) {
     erase: { type: "empty", weight: 1 },
   };
   Object.assign(cell, changes[activeTool]);
+  markMapAsCustom();
   clearVisualization("地图已修改 · 运行搜索查看变化");
 }
 
@@ -212,6 +259,7 @@ function randomizeMap() {
     else if (roll < .29) Object.assign(cell, { type: "weight", weight: 5 });
   }
   setDefaultEndpoints();
+  markMapAsCustom();
   clearVisualization("已生成随机地图 · 不保证一定存在路径");
 }
 
@@ -224,11 +272,12 @@ elements.tools.forEach(button => button.addEventListener("click", () => {
     item.setAttribute("aria-pressed", selected);
   });
 }));
+elements.presets.forEach(button => button.addEventListener("click", () => applyPreset(button.dataset.preset)));
 elements.run.addEventListener("click", toggleRun);
 elements.step.addEventListener("click", () => { if (!isRunning) advanceOneStep(); });
 elements.reset.addEventListener("click", () => clearVisualization());
 elements.random.addEventListener("click", randomizeMap);
-elements.clear.addEventListener("click", () => { grid = createGrid(); setDefaultEndpoints(); clearVisualization("地图已清空"); });
+elements.clear.addEventListener("click", () => applyPreset("blank"));
 
 elements.grid.addEventListener("pointerdown", event => {
   const button = event.target.closest(".grid-cell");
@@ -249,6 +298,5 @@ elements.grid.addEventListener("keydown", event => {
   if (button) paintCell(grid[Number(button.dataset.row)][Number(button.dataset.col)]);
 });
 
-setDefaultEndpoints();
-randomizeMap();
+applyPreset("mixed");
 selectAlgorithm("bfs");
