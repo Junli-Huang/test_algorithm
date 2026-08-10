@@ -4,7 +4,7 @@ const ROWS = 13;
 const COLS = 19;
 const DEFAULT_START = { row: 6, col: 2 };
 const DEFAULT_END = { row: 6, col: 16 };
-const SPEED_DELAYS = { slow: 420, normal: 120, fast: 55, turbo: 20 };
+const BASE_STEP_DELAY = 120;
 
 const PRESETS = {
   blank: { name: "白板", walls: [], weights: [] },
@@ -211,7 +211,7 @@ async function toggleRun() {
 
   while (isRunning && token === runToken) {
     if (advanceOneStep()) break;
-    await new Promise(resolve => setTimeout(resolve, SPEED_DELAYS[elements.speed.value]));
+    await new Promise(resolve => setTimeout(resolve, BASE_STEP_DELAY / Number(elements.speed.value)));
   }
 }
 
