@@ -6,6 +6,45 @@ const DEFAULT_START = { row: 6, col: 2 };
 const DEFAULT_END = { row: 6, col: 16 };
 const BASE_STEP_DELAY = 120;
 
+const TEACHING = {
+  bfs: {
+    structure: "Queue · FIFO",
+    frontierTitle: "队列 · 下一个从左侧取出",
+    lines: [
+      ["init", "将起点加入队列"],
+      ["loop", "当队列不为空时重复"],
+      ["select", "从队列头部取出当前节点"],
+      ["done", "若到达终点，重建路径"],
+      ["expand", "检查邻居并将未发现节点加入队尾"],
+      ["noPath", "队列为空，搜索失败"],
+    ],
+  },
+  dijkstra: {
+    structure: "Priority Queue · min g",
+    frontierTitle: "优先队列 · 按累计代价 g(n) 排序",
+    lines: [
+      ["init", "将起点以 g = 0 加入优先队列"],
+      ["loop", "当优先队列不为空时重复"],
+      ["select", "取出累计代价 g 最小的节点"],
+      ["done", "若到达终点，重建最低代价路径"],
+      ["relax", "松弛邻居：发现更低 g 就更新并入队"],
+      ["noPath", "优先队列为空，搜索失败"],
+    ],
+  },
+  astar: {
+    structure: "Priority Queue · min f",
+    frontierTitle: "优先队列 · 按 f(n) = g(n) + h(n) 排序",
+    lines: [
+      ["init", "将起点以 f = g + h 加入优先队列"],
+      ["loop", "当优先队列不为空时重复"],
+      ["select", "取出评分 f 最小的节点"],
+      ["done", "若到达终点，重建最低代价路径"],
+      ["relax", "松弛邻居并计算 f = g + h"],
+      ["noPath", "优先队列为空，搜索失败"],
+    ],
+  },
+};
+
 const PRESETS = {
   blank: { name: "白板", walls: [], weights: [] },
   weights: {
@@ -56,6 +95,11 @@ const elements = {
   scoreLabel: document.querySelector("#scoreLabel"),
   scoreValue: document.querySelector("#scoreValue"),
   guideCards: [...document.querySelectorAll(".algorithm-card")],
+  pseudoCode: document.querySelector("#pseudoCode"),
+  structureBadge: document.querySelector("#structureBadge"),
+  operationText: document.querySelector("#operationText"),
+  frontierTitle: document.querySelector("#frontierTitle"),
+  frontierQueue: document.querySelector("#frontierQueue"),
 };
 
 let grid = createGrid();
@@ -117,6 +161,48 @@ function describeCell(cell) {
   return `第 ${cell.row + 1} 行，第 ${cell.col + 1} 列，${names[cell.type]}`;
 }
 
+function renderTeaching(state = null) {
+  const teaching = TEACHING[algorithm];
+  elements.structureBadge.textContent = teaching.structure;
+  elements.frontierTitle.textContent = teaching.frontierTitle;
+  elements.pseudoCode.replaceChildren();
+
+  for (const [phase, text] of teaching.lines) {
+    const line = document.createElement("li");
+    line.dataset.phase = phase;
+    line.textContent = text;
+    if (state?.phase === phase) {
+      line.classList.add("is-active");
+      line.setAttribute("aria-current", "step");
+    }
+    elements.pseudoCode.append(line);
+  }
+
+  elements.operationText.textContent = state?.message ?? "点击“开始搜索”或“单步”观察代码执行";
+  elements.frontierQueue.replaceChildren();
+  const details = state?.frontierDetails ?? [];
+  if (details.length === 0) {
+    const empty = document.createElement("span");
+    empty.className = "queue-empty";
+    empty.textContent = state ? "候选集合为空" : "等待运行";
+    elements.frontierQueue.append(empty);
+    return;
+  }
+
+  for (const item of details.slice(0, 12)) {
+    const chip = document.createElement("span");
+    chip.className = "queue-chip";
+    chip.textContent = item.label;
+    elements.frontierQueue.append(chip);
+  }
+  if (details.length > 12) {
+    const more = document.createElement("span");
+    more.className = "queue-more";
+    more.textContent = `还有 ${details.length - 12} 个`;
+    elements.frontierQueue.append(more);
+  }
+}
+
 function clearVisualization(message = "过程已重置 · 可以继续编辑地图") {
   runToken += 1;
   iterator = null;
@@ -129,6 +215,7 @@ function clearVisualization(message = "过程已重置 · 可以继续编辑地�
   elements.scoreValue.textContent = "—";
   elements.status.textContent = message;
   renderGrid();
+  renderTeaching();
 }
 
 function initializeIterator() {
@@ -172,6 +259,7 @@ function applySnapshot(state) {
   elements.frontier.textContent = new Set(state.frontier).size;
   elements.visited.textContent = state.visited.length;
   elements.scoreValue.textContent = currentKey && state.scores[currentKey] !== undefined ? Math.round(state.scores[currentKey]) : "—";
+  renderTeaching(state);
 
   if (state.done) {
     isRunning = false;
@@ -300,3 +388,4 @@ elements.grid.addEventListener("keydown", event => {
 
 applyPreset("mixed");
 selectAlgorithm("bfs");
+

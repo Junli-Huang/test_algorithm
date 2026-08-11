@@ -33,6 +33,11 @@ const astarResult = finish(astar(grid, start, end));
 assert.equal(bfsResult.cost, 3, "BFS 应找到 3 步直线路径");
 assert.equal(dijkstraResult.cost, 5, "Dijkstra 应绕开权重格，总代价为 5");
 assert.equal(astarResult.cost, 5, "A* 应得到与 Dijkstra 相同的最优代价");
+assert.equal(bfsResult.phase, "done", "BFS 结束快照应驱动伪代码高亮");
+assert.equal(dijkstraResult.phase, "done", "Dijkstra 结束快照应驱动伪代码高亮");
+assert.equal(astarResult.phase, "done", "A* 结束快照应驱动伪代码高亮");
+assert.ok([...bfs(grid, start, end)].some(state => state.phase === "select" && state.frontierDetails), "BFS 应输出队列教学状态");
+assert.ok([...astar(grid, start, end)].some(state => state.phase === "relax" && state.frontierDetails), "A* 应输出优先队列教学状态");
 assert.deepEqual(astarResult.path.map(node => [node.row, node.col]), dijkstraResult.path.map(node => [node.row, node.col]));
 
 // 完全封闭的终点必须明确返回 noPath，不能误报成功。
@@ -41,3 +46,4 @@ const noPath = finish(astar(blocked, blocked[0][0], blocked[0][2]));
 assert.equal(noPath.noPath, true);
 
 console.log("算法测试通过：BFS、Dijkstra、A* 的路径选择符合预期。");
+

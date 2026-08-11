@@ -65,6 +65,25 @@
             <span><i class="legend-swatch current"></i>当前</span>
             <span><i class="legend-swatch path"></i>最终路径</span>
           </div>
+
+          <section class="code-follow" aria-labelledby="code-follow-title">
+            <div class="code-follow-head">
+              <div>
+                <p class="panel-kicker">CODE FOLLOW</p>
+                <h2 id="code-follow-title">代码跟随</h2>
+              </div>
+              <span id="structureBadge" class="structure-badge">Queue · FIFO</span>
+            </div>
+            <div class="code-follow-grid">
+              <ol id="pseudoCode" class="pseudo-code" aria-label="当前算法伪代码"></ol>
+              <div class="live-explain">
+                <p class="field-label">当前操作</p>
+                <p id="operationText" class="operation-text" aria-live="polite">点击“开始搜索”或“单步”观察代码执行</p>
+                <p id="frontierTitle" class="field-label">队列 · 下一个从左侧取出</p>
+                <div id="frontierQueue" class="frontier-queue" aria-live="polite"><span class="queue-empty">等待运行</span></div>
+              </div>
+            </div>
+          </section>
         </div>
 
         <aside class="control-panel" aria-label="地图编辑与运行状态">
@@ -149,3 +168,4 @@
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
+
