@@ -80,6 +80,26 @@ h1 em { color: var(--orange); font-weight: 400; }
 .legend-swatch { width: 10px; height: 10px; border: 1px solid rgba(32,33,29,.25); }
 .legend-swatch.start { background: var(--green); }.legend-swatch.end { background: var(--orange); }.legend-swatch.frontier { background: var(--blue-soft); }.legend-swatch.visited { background: var(--blue); }.legend-swatch.current, .legend-swatch.path { background: var(--yellow); }.legend-swatch.path { border-radius: 50%; }
 
+.code-follow { margin-top: 24px; border: 1px solid var(--line); background: #f7f4eb; }
+.code-follow-head { min-height: 74px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--line); }
+.code-follow-head .panel-kicker { margin-bottom: 5px; }
+.code-follow-head h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 25px; font-weight: 400; }
+.structure-badge { padding: 7px 10px; color: var(--orange-dark); border: 1px solid var(--orange); background: #fff8ef; font: 700 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.code-follow-grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(240px, .92fr); }
+.pseudo-code { margin: 0; padding: 14px 0; list-style: none; counter-reset: code-line; border-right: 1px solid var(--line); background: var(--ink); color: #d6d3c9; font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.pseudo-code li { min-height: 34px; padding: 7px 15px 7px 52px; position: relative; counter-increment: code-line; }
+.pseudo-code li::before { content: counter(code-line, decimal-leading-zero); position: absolute; left: 16px; color: #777970; }
+.pseudo-code li::after { content: "▶"; display: none; position: absolute; left: 34px; color: var(--yellow); }
+.pseudo-code li.is-active { color: #fff; background: #3b3c36; box-shadow: inset 4px 0 0 var(--yellow); }
+.pseudo-code li.is-active::after { display: block; }
+.live-explain { min-width: 0; padding: 18px; }
+.live-explain .field-label { margin: 0 0 7px; }
+.operation-text { min-height: 44px; margin: 0 0 18px; font-size: 13px; font-weight: 700; line-height: 1.55; }
+.frontier-queue { min-height: 82px; display: flex; align-content: flex-start; flex-wrap: wrap; gap: 6px; }
+.queue-chip { padding: 5px 7px; color: #254353; border: 1px solid #9bb7c5; background: var(--blue-soft); font: 700 10px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.queue-chip:first-child { box-shadow: inset 3px 0 0 var(--orange); }
+.queue-empty, .queue-more { color: var(--muted); font-size: 11px; }
+
 .control-panel { border-left: 1px solid var(--line); background: #f7f4eb; }
 .panel-section { padding: 25px 22px; border-bottom: 1px solid var(--line); }
 .panel-section h2 { margin: -10px 0 10px; font-family: Georgia, "Times New Roman", serif; font-size: 27px; font-weight: 400; }
@@ -129,6 +149,8 @@ footer { min-height: 80px; display: flex; justify-content: space-between; align-
   .hero .eyebrow, .guide-intro .eyebrow { margin-bottom: 0; }
   .lab-body { grid-template-columns: 1fr; }
   .control-panel { border-left: 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr; }
+  .code-follow-grid { grid-template-columns: 1fr; }
+  .pseudo-code { border-right: 0; border-bottom: 1px solid var(--line); }
   .panel-section { border-bottom: 0; }
   .panel-section + .panel-section { border-left: 1px solid var(--line); }
 }
@@ -143,6 +165,7 @@ footer { min-height: 80px; display: flex; justify-content: space-between; align-
   .board-meta { align-items: flex-start; flex-direction: column; gap: 8px; }
   .control-panel { display: block; }
   .panel-section + .panel-section { border-left: 0; border-top: 1px solid var(--line); }
+  .code-follow-head { align-items: flex-start; flex-direction: column; }
   .algorithm-guide { padding: 70px 0; }
   .algorithm-cards { grid-template-columns: 1fr; }
   .algorithm-card { min-height: 0; border-right: 0; border-bottom: 1px solid var(--line); }
@@ -152,3 +175,4 @@ footer { min-height: 80px; display: flex; justify-content: space-between; align-
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+

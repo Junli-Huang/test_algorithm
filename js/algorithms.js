@@ -45,6 +45,9 @@ function snapshot(current, frontierKeys, visited, scores, extra = {}) {
     scores: Object.fromEntries(scores),
     done: false,
     path: [],
+    phase: "idle",
+    message: "准备搜索",
+    frontierDetails: [],
     ...extra,
   };
 }
@@ -76,9 +79,22 @@ export function* bfs(grid, start, end) {
     const currentKey = keyOf(current);
     visited.add(currentKey);
 
+    yield snapshot(current, queue.map(keyOf), visited, distance, {
+      phase: "select",
+      message: `从队列头部取出节点 (${current.col}, ${current.row})`,
+      frontierDetails: queue.map(node => ({ key: keyOf(node), label: `(${node.col}, ${node.row})` })),
+    });
+
     if (currentKey === endKey) {
       const path = reconstructPath(cameFrom, endKey, nodes);
-      yield snapshot(current, queue.map(keyOf), visited, distance, { done: true, path, cost: path.length - 1 });
+      yield snapshot(current, queue.map(keyOf), visited, distance, {
+        done: true,
+        path,
+        cost: path.length - 1,
+        phase: "done",
+        message: `到达终点，重建出 ${path.length - 1} 步路径`,
+        frontierDetails: queue.map(node => ({ key: keyOf(node), label: `(${node.col}, ${node.row})` })),
+      });
       return;
     }
 
@@ -91,10 +107,22 @@ export function* bfs(grid, start, end) {
       queue.push(next);
     }
 
-    yield snapshot(current, queue.map(keyOf), visited, distance);
+    yield snapshot(current, queue.map(keyOf), visited, distance, {
+      phase: "expand",
+      message: `检查相邻格，将未发现节点加入队尾`,
+      frontierDetails: queue.map(node => ({
+        key: keyOf(node),
+        label: `(${node.col}, ${node.row}) · d=${distance.get(keyOf(node))}`,
+      })),
+    });
   }
 
-  yield snapshot(null, [], visited, distance, { done: true, noPath: true });
+  yield snapshot(null, [], visited, distance, {
+    done: true,
+    noPath: true,
+    phase: "noPath",
+    message: "队列已空，没有可达路径",
+  });
 }
 
 /** 一个教学用的最小优先队列。数组实现直观，规模较小时足够清晰。 */
@@ -109,6 +137,12 @@ class MinPriorityQueue {
   pop() { return this.items.shift(); }
   get length() { return this.items.length; }
   keys() { return this.items.map(item => keyOf(item.node)); }
+  details() {
+    return this.items.map(item => ({
+      key: keyOf(item.node),
+      label: `(${item.node.col}, ${item.node.row}) · p=${Math.round(item.priority)}`,
+    }));
+  }
 }
 
 /**
@@ -122,7 +156,7 @@ class MinPriorityQueue {
  * 使用二叉堆时复杂度通常为 O((V + E) log V)；这里为可读性使用排序数组。
  */
 export function* dijkstra(grid, start, end) {
-  return yield* weightedSearch(grid, start, end, () => 0);
+  return yield* weightedSearch(grid, start, end, () => 0, "dijkstra");
 }
 
 /**
@@ -137,10 +171,10 @@ export function* dijkstra(grid, start, end) {
  */
 export function* astar(grid, start, end) {
   const manhattan = node => Math.abs(node.row - end.row) + Math.abs(node.col - end.col);
-  return yield* weightedSearch(grid, start, end, manhattan);
+  return yield* weightedSearch(grid, start, end, manhattan, "astar");
 }
 
-function* weightedSearch(grid, start, end, heuristic) {
+function* weightedSearch(grid, start, end, heuristic, mode) {
   const nodes = new Map(grid.flat().map(node => [keyOf(node), node]));
   const startKey = keyOf(start);
   const endKey = keyOf(end);
@@ -157,9 +191,24 @@ function* weightedSearch(grid, start, end, heuristic) {
     if (visited.has(currentKey)) continue; // 跳过优先队列中已经过期的重复项。
     visited.add(currentKey);
 
+    yield snapshot(current, queue.keys(), visited, fScore, {
+      phase: "select",
+      message: `从优先队列取出评分最低的节点 (${current.col}, ${current.row})`,
+      gScore: Object.fromEntries(gScore),
+      frontierDetails: queue.details(),
+    });
+
     if (currentKey === endKey) {
       const path = reconstructPath(cameFrom, endKey, nodes);
-      yield snapshot(current, queue.keys(), visited, fScore, { done: true, path, cost: gScore.get(endKey), gScore: Object.fromEntries(gScore) });
+      yield snapshot(current, queue.keys(), visited, fScore, {
+        done: true,
+        path,
+        cost: gScore.get(endKey),
+        gScore: Object.fromEntries(gScore),
+        phase: "done",
+        message: `到达终点，重建最低代价路径`,
+        frontierDetails: queue.details(),
+      });
       return;
     }
 
@@ -178,10 +227,24 @@ function* weightedSearch(grid, start, end, heuristic) {
       }
     }
 
-    yield snapshot(current, queue.keys(), visited, fScore, { gScore: Object.fromEntries(gScore) });
+    yield snapshot(current, queue.keys(), visited, fScore, {
+      gScore: Object.fromEntries(gScore),
+      phase: "relax",
+      message: mode === "astar"
+        ? "计算邻居的 g(n) 与 f(n)，更新更优路线"
+        : "计算邻居的新代价，更新更便宜的路线",
+      frontierDetails: queue.details(),
+    });
   }
 
-  yield snapshot(null, [], visited, fScore, { done: true, noPath: true, gScore: Object.fromEntries(gScore) });
+  yield snapshot(null, [], visited, fScore, {
+    done: true,
+    noPath: true,
+    gScore: Object.fromEntries(gScore),
+    phase: "noPath",
+    message: "优先队列已空，没有可达路径",
+  });
 }
 
 export const algorithms = { bfs, dijkstra, astar };
+
