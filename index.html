@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="通过逐步动画观察 BFS、Dijkstra 与 A* 的寻路过程。">
+  <meta name="description" content="通过逐步动画观察 BFS、Greedy、Dijkstra 与 A* 的寻路过程。">
   <title>Pathfinding Lab · 寻路算法实验室</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -20,13 +20,14 @@
     <section class="hero" aria-labelledby="page-title">
       <p class="eyebrow">INTERACTIVE ALGORITHM DEMO</p>
       <h1 id="page-title">别只看结果，<br><em>看见搜索发生。</em></h1>
-      <p class="hero-copy">在同一张地图上逐步运行 BFS、Dijkstra 和 A*。观察候选节点如何出现、搜索范围如何扩张，以及不同策略怎样找到终点。</p>
+      <p class="hero-copy">在同一张地图上逐步运行 BFS、Greedy、Dijkstra 和 A*。观察候选节点如何出现、搜索范围如何扩张，以及不同策略怎样找到终点。</p>
     </section>
 
     <section class="lab" aria-label="寻路算法演示区">
       <div class="lab-toolbar">
         <div class="algorithm-tabs" role="tablist" aria-label="选择算法">
           <button class="algorithm-tab is-active" role="tab" aria-selected="true" data-algorithm="bfs">BFS</button>
+          <button class="algorithm-tab" role="tab" aria-selected="false" data-algorithm="greedy">Greedy</button>
           <button class="algorithm-tab" role="tab" aria-selected="false" data-algorithm="dijkstra">Dijkstra</button>
           <button class="algorithm-tab" role="tab" aria-selected="false" data-algorithm="astar">A*</button>
         </div>
@@ -90,7 +91,7 @@
           <div class="panel-section">
             <p class="panel-kicker">MAP EDITOR</p>
             <h2>编辑地图</h2>
-            <p class="panel-help">选择工具后点击或拖动格子。权重只影响 Dijkstra 与 A*。</p>
+            <p class="panel-help">选择工具后点击或拖动格子。Greedy 不用权重决定方向，Dijkstra 与 A* 会计算权重。</p>
             <div class="preset-group">
               <span class="field-label">地图预设</span>
               <div class="preset-grid" aria-label="选择地图预设">
@@ -133,7 +134,7 @@
 
     <section class="algorithm-guide" aria-labelledby="guide-title">
       <div class="guide-intro">
-        <p class="eyebrow">THREE WAYS TO SEARCH</p>
+        <p class="eyebrow">FOUR WAYS TO SEARCH</p>
         <h2 id="guide-title">它们的区别，不只是“快和慢”</h2>
         <p>三种算法都维护“待考察”和“已访问”两类节点。真正的差别，是下一次从待考察节点中取出谁。</p>
       </div>
@@ -144,14 +145,20 @@
           <code>priority = depth</code>
           <ul><li>数据结构：队列</li><li>忽略地形权重</li><li>适合无权图</li></ul>
         </article>
+        <article class="algorithm-card" data-guide="greedy">
+          <span class="card-index">02</span><h3>Greedy</h3>
+          <p>只选择看起来离终点最近的节点，方向感很强，但可能被障碍或高代价格误导。</p>
+          <code>priority = h(n)</code>
+          <ul><li>数据结构：优先队列</li><li>只看启发函数</li><li>不保证最优路径</li></ul>
+        </article>
         <article class="algorithm-card" data-guide="dijkstra">
-          <span class="card-index">02</span><h3>Dijkstra</h3>
+          <span class="card-index">03</span><h3>Dijkstra</h3>
           <p>每次选择累计花费最低的节点，稳妥地向外扩张，保证得到最低总代价。</p>
           <code>priority = g(n)</code>
           <ul><li>数据结构：优先队列</li><li>支持非负权重</li><li>保证最小代价</li></ul>
         </article>
         <article class="algorithm-card" data-guide="astar">
-          <span class="card-index">03</span><h3>A*</h3>
+          <span class="card-index">04</span><h3>A*</h3>
           <p>在已付出的代价之外，再估计离终点还有多远，让搜索更有方向感。</p>
           <code>priority = g(n) + h(n)</code>
           <ul><li>数据结构：优先队列</li><li>使用启发函数</li><li>通常访问更少节点</li></ul>
@@ -162,7 +169,7 @@
 
   <footer>
     <span>Pathfinding Lab</span>
-    <span>BFS · Dijkstra · A*</span>
+    <span>BFS · Greedy · Dijkstra · A*</span>
   </footer>
 
   <script type="module" src="js/app.js"></script>
