@@ -133,7 +133,7 @@ h1 em { color: var(--orange); font-weight: 400; }
 .guide-intro .eyebrow { grid-column: 1 / -1; margin-bottom: -22px; }
 .guide-intro h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(38px, 5vw, 60px); font-weight: 400; line-height: 1.05; letter-spacing: -.04em; }
 .guide-intro > p:last-child { margin: 0; max-width: 520px; color: var(--muted); line-height: 1.8; }
-.algorithm-cards { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
+.algorithm-cards { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
 .algorithm-card { padding: 28px; min-height: 330px; border-right: 1px solid var(--line); }
 .algorithm-card:last-child { border-right: 0; }
 .card-index { color: var(--orange-dark); font-size: 11px; font-weight: 800; }
@@ -159,7 +159,8 @@ footer { min-height: 80px; display: flex; justify-content: space-between; align-
   .header-note { display: none; }
   .hero { padding: 50px 0 38px; }
   .lab-toolbar { align-items: stretch; flex-direction: column; }
-  .algorithm-tabs, .run-controls { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .algorithm-tabs { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .run-controls { display: grid; grid-template-columns: repeat(3, 1fr); }
   .button, .algorithm-tab { padding-inline: 8px; font-size: 12px; }
   .board-column { padding: 12px; }
   .board-meta { align-items: flex-start; flex-direction: column; gap: 8px; }

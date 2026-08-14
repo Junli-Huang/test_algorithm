@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { astar, bfs, dijkstra } from "../js/algorithms.js";
+import { astar, bfs, dijkstra, greedy } from "../js/algorithms.js";
 
 function makeGrid(weights) {
   return weights.map((row, rowIndex) => row.map((weight, col) => ({
@@ -27,16 +27,20 @@ const start = grid[1][0];
 const end = grid[1][3];
 
 const bfsResult = finish(bfs(grid, start, end));
+const greedyResult = finish(greedy(grid, start, end));
 const dijkstraResult = finish(dijkstra(grid, start, end));
 const astarResult = finish(astar(grid, start, end));
 
 assert.equal(bfsResult.cost, 3, "BFS 应找到 3 步直线路径");
+assert.equal(greedyResult.cost, 19, "Greedy 只看 h，应直穿高权重格且总代价为 19");
 assert.equal(dijkstraResult.cost, 5, "Dijkstra 应绕开权重格，总代价为 5");
 assert.equal(astarResult.cost, 5, "A* 应得到与 Dijkstra 相同的最优代价");
 assert.equal(bfsResult.phase, "done", "BFS 结束快照应驱动伪代码高亮");
+assert.equal(greedyResult.phase, "done", "Greedy 结束快照应驱动伪代码高亮");
 assert.equal(dijkstraResult.phase, "done", "Dijkstra 结束快照应驱动伪代码高亮");
 assert.equal(astarResult.phase, "done", "A* 结束快照应驱动伪代码高亮");
 assert.ok([...bfs(grid, start, end)].some(state => state.phase === "select" && state.frontierDetails), "BFS 应输出队列教学状态");
+assert.ok([...greedy(grid, start, end)].some(state => state.phase === "expand" && state.frontierDetails), "Greedy 应输出按 h 排序的教学状态");
 assert.ok([...astar(grid, start, end)].some(state => state.phase === "relax" && state.frontierDetails), "A* 应输出优先队列教学状态");
 assert.deepEqual(astarResult.path.map(node => [node.row, node.col]), dijkstraResult.path.map(node => [node.row, node.col]));
 
@@ -45,5 +49,5 @@ const blocked = makeGrid([[1, Infinity, 1]]);
 const noPath = finish(astar(blocked, blocked[0][0], blocked[0][2]));
 assert.equal(noPath.noPath, true);
 
-console.log("算法测试通过：BFS、Dijkstra、A* 的路径选择符合预期。");
+console.log("算法测试通过：BFS、Greedy、Dijkstra、A* 的路径选择符合预期。");
 
