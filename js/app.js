@@ -19,6 +19,18 @@ const TEACHING = {
       ["noPath", "队列为空，搜索失败"],
     ],
   },
+  greedy: {
+    structure: "Priority Queue · min h",
+    frontierTitle: "优先队列 · 按启发值 h(n) 排序",
+    lines: [
+      ["init", "将起点按 h(n) 加入优先队列"],
+      ["loop", "当优先队列不为空时重复"],
+      ["select", "取出启发值 h 最小的节点"],
+      ["done", "若到达终点，重建找到的路径"],
+      ["expand", "计算邻居的 h(n) 并加入优先队列"],
+      ["noPath", "优先队列为空，搜索失败"],
+    ],
+  },
   dijkstra: {
     structure: "Priority Queue · min g",
     frontierTitle: "优先队列 · 按累计代价 g(n) 排序",
@@ -333,11 +345,16 @@ function selectAlgorithm(next) {
     tab.setAttribute("aria-selected", selected);
   }
   for (const card of elements.guideCards) card.classList.toggle("is-highlighted", card.dataset.guide === algorithm);
-  elements.scoreLabel.textContent = algorithm === "bfs" ? "层级 distance" : algorithm === "dijkstra" ? "累计代价 g(n)" : "优先级 f(n)";
+  elements.scoreLabel.textContent = {
+    bfs: "层级 distance",
+    greedy: "启发值 h(n)",
+    dijkstra: "累计代价 g(n)",
+    astar: "优先级 f(n)",
+  }[algorithm];
   clearVisualization(`已切换到 ${algorithmName()} · 地图保持不变`);
 }
 
-function algorithmName() { return { bfs: "BFS", dijkstra: "Dijkstra", astar: "A*" }[algorithm]; }
+function algorithmName() { return { bfs: "BFS", greedy: "Greedy", dijkstra: "Dijkstra", astar: "A*" }[algorithm]; }
 
 function randomizeMap() {
   grid = createGrid();
