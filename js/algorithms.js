@@ -146,6 +146,76 @@ class MinPriorityQueue {
 }
 
 /**
+ * Greedy Best-First Search（贪心最佳优先搜索）
+ *
+ * 每次只选择启发值 h(n) 最小、看起来离终点最近的节点。它通常很有方向感，
+ * 但不考虑已经付出的代价 g(n)，因此不能保证最短或最低代价路径。
+ */
+export function* greedy(grid, start, end) {
+  const nodes = new Map(grid.flat().map(node => [keyOf(node), node]));
+  const startKey = keyOf(start);
+  const endKey = keyOf(end);
+  const heuristic = node => Math.abs(node.row - end.row) + Math.abs(node.col - end.col);
+  const queue = new MinPriorityQueue();
+  const discovered = new Set([startKey]);
+  const visited = new Set();
+  const cameFrom = new Map();
+  const hScore = new Map([[startKey, heuristic(start)]]);
+  const pathCost = new Map([[startKey, 0]]);
+  queue.push(start, hScore.get(startKey));
+
+  while (queue.length > 0) {
+    const { node: current } = queue.pop();
+    const currentKey = keyOf(current);
+    if (visited.has(currentKey)) continue;
+    visited.add(currentKey);
+
+    yield snapshot(current, queue.keys(), visited, hScore, {
+      phase: "select",
+      message: `取出启发值 h 最小的节点 (${current.col}, ${current.row})`,
+      frontierDetails: queue.details(),
+    });
+
+    if (currentKey === endKey) {
+      const path = reconstructPath(cameFrom, endKey, nodes);
+      yield snapshot(current, queue.keys(), visited, hScore, {
+        done: true,
+        path,
+        cost: pathCost.get(endKey),
+        phase: "done",
+        message: "到达终点，重建找到的路径（不保证最优）",
+        frontierDetails: queue.details(),
+      });
+      return;
+    }
+
+    for (const next of neighbors(current, grid)) {
+      const nextKey = keyOf(next);
+      if (discovered.has(nextKey)) continue;
+      discovered.add(nextKey);
+      cameFrom.set(nextKey, currentKey);
+      pathCost.set(nextKey, pathCost.get(currentKey) + next.weight);
+      const priority = heuristic(next);
+      hScore.set(nextKey, priority);
+      queue.push(next, priority);
+    }
+
+    yield snapshot(current, queue.keys(), visited, hScore, {
+      phase: "expand",
+      message: "计算邻居的 h(n)，按离终点的估计距离排序",
+      frontierDetails: queue.details(),
+    });
+  }
+
+  yield snapshot(null, [], visited, hScore, {
+    done: true,
+    noPath: true,
+    phase: "noPath",
+    message: "优先队列已空，没有可达路径",
+  });
+}
+
+/**
  * Dijkstra 最短路径
  *
  * g(n) 表示从起点走到 n 的当前最低已知代价。算法每次从优先队列中取出
@@ -246,5 +316,5 @@ function* weightedSearch(grid, start, end, heuristic, mode) {
   });
 }
 
-export const algorithms = { bfs, dijkstra, astar };
+export const algorithms = { bfs, greedy, dijkstra, astar };
 
