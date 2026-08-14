@@ -50,3 +50,6 @@ npm test
 
 普通格移动代价为 1。BFS 会忽略权重，Dijkstra 和 A* 会计算权重，因此可以直观看到“最少步数”和“最低代价”的区别。
 
+## License
+
+本项目基于 [MIT License](LICENSE) 开源。
